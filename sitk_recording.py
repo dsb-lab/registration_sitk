@@ -16,7 +16,6 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-s','--setup',action='store_true',help="Setup the analysis folder. If the folder exist, it will throw an error.")
 parser.add_argument('-sf','--setupforce',action='store_true',help="Remove any setup folder if it already exists and setup the analysis folder.")
 parser.add_argument('-pa','--preanalysis',action='store_true',help="Perform the preanalysis step.")
-parser.add_argument('-pae','--preanalysisexecute',action='store_true',help="Perform the preanalysis step to all files.")
 parser.add_argument('folder',help="Folder where your images with names in order are stored.")
 
 args = parser.parse_args()
@@ -195,7 +194,5 @@ elif args.setup:
     setup(args.folder)
 elif args.preanalysis:
     preanalysis(args.folder)
-elif args.preanalysisexecute:
-    preanalysisexecute(args.folder)
 else:
     raise Exception("You have to provide at least a flag.")
