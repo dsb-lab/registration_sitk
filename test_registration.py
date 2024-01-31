@@ -14,14 +14,14 @@ path_data = home + "/Desktop/PhD/projects/Data/blastocysts/Lana/20230607_CAG_H2B
 embcode = "20230607_CAG_H2B_GFP_16_cells_stack2"
 path_save = home + "/Desktop/PhD/projects/Data/blastocysts/Lana/20230607_CAG_H2B_GFP_16_cells/stack_2_channel_0_obj_bottom/crop/20230607_CAG_H2B_GFP_16_cells_stack2_registered/"
 
-path_trans = create_dir(path_save, "transformations", return_path=True, rem=True)
-path_trans_steps  = create_dir(path_trans, "steps", return_path=True, rem=True)
-path_trans_globals = create_dir(path_trans, "globals", return_path=True, rem=True)
+path_trans = create_dir(path_save, "transformations", return_path=True, rem=False)
+path_trans_steps  = create_dir(path_trans, "steps", return_path=True, rem=False)
+path_trans_globals = create_dir(path_trans, "globals", return_path=True, rem=False)
 
 total_files = get_ordered_tif_files(path_data)
 total_times = len(total_files)
 
-files = total_files[:100]
+files = total_files
 
 xres_template=0
 yres_template=0
@@ -35,6 +35,7 @@ def pre_treatment(img):
 
 ### PERFORM REGISTRATION ###
 for t in range(len(files)-1):
+    print(t)
     filename = files[t]
     IMG, xyres, zres = read_img_with_resolution(correct_path(path_data) + filename)
     arr_ref = IMG[0]        
@@ -44,7 +45,9 @@ for t in range(len(files)-1):
     IMG, xyres, zres = read_img_with_resolution(correct_path(path_data) + filename)
     arr_mov = IMG[0]
     arr_mov = pre_treatment(arr_mov)
-
+    
+    if arr_mov.shape != arr_ref.shape:
+        arr_ref=pad_image_and_square_array3D(arr_ref, required_size_xy=max(arr_mov.shape[1:]), required_size_z=arr_mov.shape[0], pad_val=np.mean(arr_ref[20,:10,:10]))
     # if arr_ref.shape != arr_mov.shape:
     #     arr_ref = pad_image_and_square_array3D(arr_ref, required_size_xy=np.max(arr_mov.shape[1:]), required_size_z=arr_mov.shape[0], pad_val=np.mean(arr_ref[0,:10,:10]))
 
@@ -69,7 +72,6 @@ for t in range(len(files)-1):
     registration_method = sitk.ImageRegistrationMethod()
 
     # Similarity metric settings.
-    registration_method.SetMetricAs
     registration_method.SetMetricAsMattesMutualInformation(numberOfHistogramBins=50)
     registration_method.SetMetricSamplingStrategy(registration_method.RANDOM) #NONE uses all pints, RANDOM downscales them
     registration_method.SetMetricSamplingPercentage(0.01) #Percentage of downscaling
@@ -78,8 +80,8 @@ for t in range(len(files)-1):
 
     # Optimizer settings.
     registration_method.SetOptimizerAsGradientDescent(
-        learningRate=0.005,
-        numberOfIterations=400,
+        learningRate=0.01,
+        numberOfIterations=300,
         convergenceMinimumValue=1e-7,
         convergenceWindowSize=10,
     )
@@ -164,7 +166,7 @@ for tr in range(len(transfroms_steps)):
 import matplotlib.pyplot as plt
 
 z = 45
-tplot = 29
+tplot = 598
 img1 = sitk.ReadImage(correct_path(path_save) + "0.tif")
 img2 = sitk.ReadImage(correct_path(path_save) + "{}.tif".format(tplot))
 
@@ -207,8 +209,8 @@ plt.show()
 
 import matplotlib.pyplot as plt
 
-tplot_pre = 81
-tplot_post = 82
+tplot_pre = 5
+tplot_post = 6
 img1 = sitk.ReadImage(correct_path(path_save) + "{}.tif".format(tplot_pre))
 img2 = sitk.ReadImage(correct_path(path_save) + "{}.tif".format(tplot_post))
 
